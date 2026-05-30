@@ -6,7 +6,7 @@
 # MongoDB Atlas cluster and set MONGODB_URI in the Render dashboard.
 services:
   - type: web
-    name: aegis
+    name: aegisweb
     runtime: node
     plan: free
     region: oregon
