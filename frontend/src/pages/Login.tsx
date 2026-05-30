@@ -1,150 +1,108 @@
-import { ArrowDown, ArrowRight, ArrowUp } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { useAuth } from "@/contexts/AuthContext";
+import { ApiError } from "@/lib/api";
 
-export function Card({ className, ...props }: React.HTMLAttributes<HTMLDivElement>) {
-  return <div className={cn("card rounded-2xl p-5", className)} {...props} />;
-}
+export default function Login() {
+  const { login } = useAuth();
+  const navigate = useNavigate();
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
 
-export function Badge({ className, ...props }: React.HTMLAttributes<HTMLSpanElement>) {
-  return (
-    <span
-      className={cn(
-        "inline-flex items-center rounded-md border px-2 py-0.5 text-[10px] font-bold uppercase tracking-[.07em]",
-        className
-      )}
-      {...props}
-    />
-  );
-}
-
-export function Field({
-  label,
-  children,
-  hint,
-}: {
-  label: string;
-  children: React.ReactNode;
-  hint?: string;
-}) {
-  return (
-    <label className="grid gap-1.5 text-xs font-semibold uppercase tracking-[.1em] text-slate-500">
-      <span>{label}</span>
-      {children}
-      {hint && <span className="text-[11px] font-normal normal-case tracking-normal text-slate-600">{hint}</span>}
-    </label>
-  );
-}
-
-export function EmptyState({ title, body }: { title: string; body: string }) {
-  return (
-    <div className="rounded-xl border border-dashed border-slate-700/60 bg-slate-900/20 p-8 text-center">
-      <h3 className="text-sm font-bold text-slate-400">{title}</h3>
-      <p className="mt-1.5 text-xs leading-relaxed text-slate-600">{body}</p>
-    </div>
-  );
-}
-
-export function EmptyCard({ title, body }: { title: string; body: string }) {
-  return (
-    <Card>
-      <EmptyState title={title} body={body} />
-    </Card>
-  );
-}
-
-export function Spinner() {
-  return (
-    <div className="flex flex-col items-center justify-center gap-3 py-20" role="status">
-      <svg
-        className="h-7 w-7 animate-spin text-sky-400"
-        viewBox="0 0 24 24"
-        fill="none"
-        aria-hidden
-      >
-        <circle className="opacity-20" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="3" />
-        <path className="opacity-80" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
-      </svg>
-      <span className="text-xs font-medium text-slate-500">Loading…</span>
-    </div>
-  );
-}
-
-export function Stat({
-  label,
-  value,
-  sub,
-  trend,
-  accent = "sky",
-}: {
-  label: string;
-  value: string | number;
-  sub?: string;
-  trend?: "up" | "down" | "flat";
-  accent?: "red" | "orange" | "sky" | "green" | "slate";
-}) {
-  const TrendIcon =
-    trend === "up" ? ArrowUp : trend === "down" ? ArrowDown : ArrowRight;
-  const trendColor =
-    trend === "up"
-      ? "text-emerald-400"
-      : trend === "down"
-      ? "text-red-400"
-      : "text-slate-500";
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    setError(null);
+    setLoading(true);
+    try {
+      await login(email, password);
+      navigate("/", { replace: true });
+    } catch (err) {
+      setError(err instanceof ApiError ? err.message : "Login failed. Please try again.");
+    } finally {
+      setLoading(false);
+    }
+  }
 
   return (
-    <Card className={cn("stat-accent-" + accent)}>
-      <div className="text-[10px] font-bold uppercase tracking-[.15em] text-slate-500">{label}</div>
-      <div className="mt-3 flex items-end gap-2">
-        <div className="text-[2rem] font-black leading-none tracking-tight text-slate-100 tabular-nums">
-          {value}
+    <div className="flex min-h-screen items-center justify-center bg-[hsl(var(--background))] px-4">
+      <div className="w-full max-w-sm">
+        {/* Logo / Wordmark */}
+        <div className="mb-8 text-center">
+          <div className="inline-flex items-center gap-2.5">
+            <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-sky-500/10 ring-1 ring-sky-500/30">
+              <svg viewBox="0 0 24 24" fill="none" className="h-5 w-5 text-sky-400" aria-hidden>
+                <path
+                  d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+              </svg>
+            </span>
+            <span className="text-2xl font-black tracking-tight text-slate-100">AEGIS</span>
+          </div>
+          <p className="mt-2 text-[11px] font-semibold uppercase tracking-[.18em] text-slate-500">
+            Emergency Department Intelligence
+          </p>
         </div>
-        {trend && <TrendIcon className={cn("mb-0.5 h-4 w-4 shrink-0", trendColor)} />}
+
+        {/* Card */}
+        <div className="card rounded-2xl p-7">
+          <h1 className="mb-1 text-base font-black text-slate-100">Sign in</h1>
+          <p className="mb-6 text-xs text-slate-500">Enter your credentials to access the dashboard.</p>
+
+          <form onSubmit={handleSubmit} className="grid gap-4">
+            <label className="grid gap-1.5 text-xs font-semibold uppercase tracking-[.1em] text-slate-500">
+              Email
+              <input
+                className="input"
+                type="email"
+                autoComplete="email"
+                placeholder="you@hospital.org"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+                disabled={loading}
+              />
+            </label>
+
+            <label className="grid gap-1.5 text-xs font-semibold uppercase tracking-[.1em] text-slate-500">
+              Password
+              <input
+                className="input"
+                type="password"
+                autoComplete="current-password"
+                placeholder="••••••••"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+                disabled={loading}
+              />
+            </label>
+
+            {error && (
+              <div className="rounded-lg border border-red-500/20 bg-red-500/8 px-3.5 py-2.5 text-xs text-red-400">
+                {error}
+              </div>
+            )}
+
+            <button
+              type="submit"
+              className="btn btn-primary mt-1 w-full"
+              disabled={loading}
+            >
+              {loading ? "Signing in…" : "Sign in"}
+            </button>
+          </form>
+        </div>
+
+        <p className="mt-5 text-center text-[11px] text-slate-600">
+          Contact your administrator if you need access.
+        </p>
       </div>
-      {sub && <div className="mt-1.5 text-[11px] text-slate-500">{sub}</div>}
-    </Card>
-  );
-}
-
-export function StatusDot({ status }: { status: "live" | "warn" | "off" }) {
-  const colors = {
-    live: "bg-emerald-400",
-    warn: "bg-amber-400",
-    off: "bg-slate-500",
-  };
-
-  return (
-    <span className="relative inline-flex h-2 w-2 shrink-0">
-      {status === "live" && (
-        <span
-          className={cn(
-            "absolute inline-flex h-full w-full animate-ping rounded-full opacity-60",
-            colors.live
-          )}
-        />
-      )}
-      <span className={cn("relative inline-flex h-2 w-2 rounded-full", colors[status])} />
-    </span>
-  );
-}
-
-export function SectionHeader({
-  title,
-  subtitle,
-  action,
-}: {
-  title: string;
-  subtitle?: string;
-  action?: React.ReactNode;
-}) {
-  return (
-    <div className="flex flex-wrap items-start justify-between gap-4">
-      <div>
-        <h1 className="text-xl font-black tracking-tight text-slate-100">{title}</h1>
-        {subtitle && (
-          <p className="mt-1 max-w-xl text-[12px] leading-relaxed text-slate-500">{subtitle}</p>
-        )}
-      </div>
-      {action && <div className="flex shrink-0 items-center gap-2">{action}</div>}
     </div>
   );
 }
