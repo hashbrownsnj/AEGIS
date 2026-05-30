@@ -1,84 +1,150 @@
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { AlertCircle, Loader2 } from "lucide-react";
-import { useAuth } from "@/contexts/AuthContext";
-import { Card, Field } from "@/components/ui/Primitives";
+import { ArrowDown, ArrowRight, ArrowUp } from "lucide-react";
+import { cn } from "@/lib/utils";
 
-export default function Login() {
-  const { login } = useAuth();
-  const nav = useNavigate();
-  const [error, setError] = useState("");
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [submitting, setSubmitting] = useState(false);
+export function Card({ className, ...props }: React.HTMLAttributes<HTMLDivElement>) {
+  return <div className={cn("card rounded-2xl p-5", className)} {...props} />;
+}
+
+export function Badge({ className, ...props }: React.HTMLAttributes<HTMLSpanElement>) {
+  return (
+    <span
+      className={cn(
+        "inline-flex items-center rounded-md border px-2 py-0.5 text-[10px] font-bold uppercase tracking-[.07em]",
+        className
+      )}
+      {...props}
+    />
+  );
+}
+
+export function Field({
+  label,
+  children,
+  hint,
+}: {
+  label: string;
+  children: React.ReactNode;
+  hint?: string;
+}) {
+  return (
+    <label className="grid gap-1.5 text-xs font-semibold uppercase tracking-[.1em] text-slate-500">
+      <span>{label}</span>
+      {children}
+      {hint && <span className="text-[11px] font-normal normal-case tracking-normal text-slate-600">{hint}</span>}
+    </label>
+  );
+}
+
+export function EmptyState({ title, body }: { title: string; body: string }) {
+  return (
+    <div className="rounded-xl border border-dashed border-slate-700/60 bg-slate-900/20 p-8 text-center">
+      <h3 className="text-sm font-bold text-slate-400">{title}</h3>
+      <p className="mt-1.5 text-xs leading-relaxed text-slate-600">{body}</p>
+    </div>
+  );
+}
+
+export function EmptyCard({ title, body }: { title: string; body: string }) {
+  return (
+    <Card>
+      <EmptyState title={title} body={body} />
+    </Card>
+  );
+}
+
+export function Spinner() {
+  return (
+    <div className="flex flex-col items-center justify-center gap-3 py-20" role="status">
+      <svg
+        className="h-7 w-7 animate-spin text-sky-400"
+        viewBox="0 0 24 24"
+        fill="none"
+        aria-hidden
+      >
+        <circle className="opacity-20" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="3" />
+        <path className="opacity-80" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+      </svg>
+      <span className="text-xs font-medium text-slate-500">Loading…</span>
+    </div>
+  );
+}
+
+export function Stat({
+  label,
+  value,
+  sub,
+  trend,
+  accent = "sky",
+}: {
+  label: string;
+  value: string | number;
+  sub?: string;
+  trend?: "up" | "down" | "flat";
+  accent?: "red" | "orange" | "sky" | "green" | "slate";
+}) {
+  const TrendIcon =
+    trend === "up" ? ArrowUp : trend === "down" ? ArrowDown : ArrowRight;
+  const trendColor =
+    trend === "up"
+      ? "text-emerald-400"
+      : trend === "down"
+      ? "text-red-400"
+      : "text-slate-500";
 
   return (
-    <div className="grid min-h-screen place-items-center bg-slate-950 px-4">
-      <Card className="w-full max-w-sm border-slate-800 bg-slate-900/90">
-        <div className="mb-8 text-center">
-          <div className="mx-auto grid h-14 w-14 place-items-center rounded-2xl bg-sky-600 font-black text-2xl text-white">
-            A
-          </div>
-          <div className="mt-4 text-2xl font-black tracking-tight text-slate-100">AEGIS</div>
-          <p className="mt-2 text-sm text-slate-500">
-            Emergency operations &amp; ACUITY decision support
-          </p>
+    <Card className={cn("stat-accent-" + accent)}>
+      <div className="text-[10px] font-bold uppercase tracking-[.15em] text-slate-500">{label}</div>
+      <div className="mt-3 flex items-end gap-2">
+        <div className="text-[2rem] font-black leading-none tracking-tight text-slate-100 tabular-nums">
+          {value}
         </div>
+        {trend && <TrendIcon className={cn("mb-0.5 h-4 w-4 shrink-0", trendColor)} />}
+      </div>
+      {sub && <div className="mt-1.5 text-[11px] text-slate-500">{sub}</div>}
+    </Card>
+  );
+}
 
-        <form
-          className="grid gap-4"
-          onSubmit={async (e) => {
-            e.preventDefault();
-            setError("");
-            setSubmitting(true);
-            try {
-              await login(email, password);
-              nav("/");
-            } catch (err: any) {
-              setError(err.message);
-            } finally {
-              setSubmitting(false);
-            }
-          }}
-        >
-          <Field label="Email">
-            <input
-              className="input"
-              type="email"
-              autoComplete="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-            />
-          </Field>
-          <Field label="Password">
-            <input
-              className="input"
-              type="password"
-              autoComplete="current-password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-            />
-          </Field>
+export function StatusDot({ status }: { status: "live" | "warn" | "off" }) {
+  const colors = {
+    live: "bg-emerald-400",
+    warn: "bg-amber-400",
+    off: "bg-slate-500",
+  };
 
-          <button className="btn btn-primary flex w-full items-center justify-center gap-2" type="submit" disabled={submitting}>
-            {submitting && <Loader2 className="h-4 w-4 animate-spin" />}
-            {submitting ? "Signing in…" : "Sign in"}
-          </button>
-
-          {error && (
-            <div className="flex items-start gap-2 rounded-xl border border-red-500/30 bg-red-500/10 p-3 text-sm text-red-300">
-              <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
-              <span>{error}</span>
-            </div>
+  return (
+    <span className="relative inline-flex h-2 w-2 shrink-0">
+      {status === "live" && (
+        <span
+          className={cn(
+            "absolute inline-flex h-full w-full animate-ping rounded-full opacity-60",
+            colors.live
           )}
-        </form>
+        />
+      )}
+      <span className={cn("relative inline-flex h-2 w-2 rounded-full", colors[status])} />
+    </span>
+  );
+}
 
-        <p className="mt-6 text-center text-xs text-slate-600">
-          For access, contact your IT administrator
-        </p>
-      </Card>
+export function SectionHeader({
+  title,
+  subtitle,
+  action,
+}: {
+  title: string;
+  subtitle?: string;
+  action?: React.ReactNode;
+}) {
+  return (
+    <div className="flex flex-wrap items-start justify-between gap-4">
+      <div>
+        <h1 className="text-xl font-black tracking-tight text-slate-100">{title}</h1>
+        {subtitle && (
+          <p className="mt-1 max-w-xl text-[12px] leading-relaxed text-slate-500">{subtitle}</p>
+        )}
+      </div>
+      {action && <div className="flex shrink-0 items-center gap-2">{action}</div>}
     </div>
   );
 }
