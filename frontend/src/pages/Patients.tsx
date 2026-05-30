@@ -10,96 +10,109 @@ import {
   EmptyCard,
   Field,
   SectionHeader,
-  Spinner
+  Spinner,
 } from "@/components/ui/Primitives";
 import { cn, formatStatusLabel, priorityTone, statusTone } from "@/lib/utils";
+import { UserPlus } from "lucide-react";
+
+const EMPTY_FORM = {
+  mrn: "",
+  fullName: "",
+  age: "",
+  sex: "unknown",
+  arrivalSource: "walk_in",
+  symptoms: "",
+  medicalHistory: "",
+  allergies: "",
+  assignedZone: "",
+};
 
 export default function Patients() {
   const { data, loading, reload } = useAsync(endpoints.patients, []);
   const [medications, setMedications] = useState<Medication[]>([]);
   const [medicationInteractions, setMedicationInteractions] = useState<DrugInteraction[]>([]);
-  const [form, setForm] = useState<any>({
-    mrn: "",
-    fullName: "",
-    age: "",
-    sex: "unknown",
-    arrivalSource: "walk_in",
-    symptoms: "",
-    medicalHistory: "",
-    allergies: "",
-    assignedZone: ""
-  });
+  const [form, setForm] = useState<any>(EMPTY_FORM);
+  const [submitting, setSubmitting] = useState(false);
 
   if (loading) return <Spinner />;
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
-    await endpoints.createPatient({
-      ...form,
-      age: Number(form.age),
-      symptoms: form.symptoms.split(",").map((s: string) => s.trim()).filter(Boolean),
-      medicalHistory: form.medicalHistory.split(",").map((s: string) => s.trim()).filter(Boolean),
-      allergies: form.allergies.split(",").map((s: string) => s.trim()).filter(Boolean),
-      medications,
-      medicationInteractions
-    });
-    setForm({
-      mrn: "",
-      fullName: "",
-      age: "",
-      sex: "unknown",
-      arrivalSource: "walk_in",
-      symptoms: "",
-      medicalHistory: "",
-      allergies: "",
-      assignedZone: ""
-    });
-    setMedications([]);
-    setMedicationInteractions([]);
-    reload();
+    setSubmitting(true);
+    try {
+      await endpoints.createPatient({
+        ...form,
+        age: Number(form.age),
+        symptoms: form.symptoms.split(",").map((s: string) => s.trim()).filter(Boolean),
+        medicalHistory: form.medicalHistory.split(",").map((s: string) => s.trim()).filter(Boolean),
+        allergies: form.allergies.split(",").map((s: string) => s.trim()).filter(Boolean),
+        medications,
+        medicationInteractions,
+      });
+      setForm(EMPTY_FORM);
+      setMedications([]);
+      setMedicationInteractions([]);
+      reload();
+    } finally {
+      setSubmitting(false);
+    }
   }
 
   return (
-    <div className="grid gap-6">
+    <div className="grid gap-5">
       <SectionHeader
         title="Patient Management"
         subtitle="Register incoming patients and run ACUITY triage at intake."
       />
 
-      <div className="grid gap-6 xl:grid-cols-[1fr_420px]">
+      <div className="grid gap-5 xl:grid-cols-[1fr_420px]">
+        {/* Patients table */}
         {!data?.length ? (
           <EmptyCard title="No patients registered" body="Use the intake form to register the first patient." />
         ) : (
-          <Card className="overflow-hidden p-0">
-            <table className="w-full text-left text-sm">
-              <thead className="sticky top-0 bg-slate-900/95 text-xs uppercase tracking-wide text-slate-500">
+          <Card className="overflow-hidden p-0 self-start">
+            <div className="border-b border-slate-800 px-5 py-3.5">
+              <h2 className="text-sm font-black text-slate-200">Registered Patients</h2>
+              <p className="mt-0.5 text-[11px] text-slate-500">{data.length} record{data.length !== 1 && "s"}</p>
+            </div>
+            <table className="data-table w-full text-left text-sm">
+              <thead className="bg-slate-900/60">
                 <tr>
-                  <th className="px-5 py-3">MRN</th>
-                  <th className="px-3 py-3">Patient</th>
-                  <th className="px-3 py-3">Arrival</th>
-                  <th className="px-3 py-3">Status</th>
-                  <th className="px-3 py-3">Triage</th>
-                  <th className="px-5 py-3">Zone</th>
+                  <th className="px-5 py-3 text-[9px] font-bold uppercase tracking-widest text-slate-600">MRN</th>
+                  <th className="px-3 py-3 text-[9px] font-bold uppercase tracking-widest text-slate-600">Patient</th>
+                  <th className="px-3 py-3 text-[9px] font-bold uppercase tracking-widest text-slate-600">Arrival</th>
+                  <th className="px-3 py-3 text-[9px] font-bold uppercase tracking-widest text-slate-600">Status</th>
+                  <th className="px-3 py-3 text-[9px] font-bold uppercase tracking-widest text-slate-600">Triage</th>
+                  <th className="px-5 py-3 text-[9px] font-bold uppercase tracking-widest text-slate-600">Zone</th>
                 </tr>
               </thead>
               <tbody>
                 {data.map((p: any) => (
-                  <tr key={p._id} className="border-t border-slate-800 transition-colors hover:bg-white/5">
-                    <td className="px-5 py-4 font-mono text-xs text-slate-500">{p.mrn}</td>
-                    <td className="px-3 py-4">
-                      <Link className="font-bold text-sky-400 hover:text-sky-300" to={`/patients/${p._id}`}>
+                  <tr key={p._id}>
+                    <td className="px-5 py-3.5">
+                      <span className="font-mono text-[11px] text-slate-500">{p.mrn}</span>
+                    </td>
+                    <td className="px-3 py-3.5">
+                      <Link
+                        className="text-sm font-bold text-sky-400 hover:text-sky-300 hover:underline"
+                        to={`/patients/${p._id}`}
+                      >
                         {p.fullName}
                       </Link>
-                      <div className="text-xs text-slate-500">{p.age} years</div>
+                      <div className="text-[11px] text-slate-500">{p.age}y</div>
                     </td>
-                    <td className="px-3 py-4 text-slate-400">{p.arrivalSource?.replace(/_/g, " ")}</td>
-                    <td className="px-3 py-4">
+                    <td className="px-3 py-3.5 text-[12px] text-slate-400 capitalize">
+                      {p.arrivalSource?.replace(/_/g, " ")}
+                    </td>
+                    <td className="px-3 py-3.5">
                       <span className={cn("pill", statusTone(p.status))}>{formatStatusLabel(p.status)}</span>
                     </td>
-                    <td className="px-3 py-4">
-                      <Badge className={priorityTone(p.triageStatus)}>{p.triageStatus?.replace(/_/g, " ")}</Badge>
+                    <td className="px-3 py-3.5">
+                      <Badge className={priorityTone(p.triageStatus)}>
+                        {p.triageStatus?.replace(/_/g, " ")}
+                      </Badge>
                     </td>
-                    <td className="px-5 py-4 text-slate-400">{p.assignedZone || "—"}</td>
+                    <td className="px-5 py-3.5 text-[12px] text-slate-400">{p.assignedZone || "—"}</td>
                   </tr>
                 ))}
               </tbody>
@@ -107,24 +120,52 @@ export default function Patients() {
           </Card>
         )}
 
-        <Card>
-          <h2 className="font-black text-slate-200">Patient intake</h2>
-          <form className="mt-4 grid gap-3" onSubmit={submit}>
-            <Field
-              label="Medical Record Number (MRN)"
-              hint="Must be unique — use your hospital's standard MRN format."
-            >
-              <input className="input" value={form.mrn} onChange={(e) => setForm({ ...form, mrn: e.target.value })} required />
+        {/* Intake form */}
+        <Card className="self-start">
+          <div className="mb-4 flex items-center gap-2">
+            <UserPlus className="h-4 w-4 text-sky-400" />
+            <h2 className="text-sm font-black text-slate-200">Patient Intake</h2>
+          </div>
+
+          <form className="grid gap-3" onSubmit={submit}>
+            <Field label="Medical Record Number" hint="Must be unique — use your hospital's standard format.">
+              <input
+                className="input font-mono"
+                placeholder="AEG-10XXX"
+                value={form.mrn}
+                onChange={(e) => setForm({ ...form, mrn: e.target.value })}
+                required
+              />
             </Field>
-            <Field label="Patient Full Name">
-              <input className="input" value={form.fullName} onChange={(e) => setForm({ ...form, fullName: e.target.value })} required />
+
+            <Field label="Full Name">
+              <input
+                className="input"
+                placeholder="First Last"
+                value={form.fullName}
+                onChange={(e) => setForm({ ...form, fullName: e.target.value })}
+                required
+              />
             </Field>
+
             <div className="grid grid-cols-2 gap-3">
               <Field label="Age">
-                <input className="input" type="number" min={0} value={form.age} onChange={(e) => setForm({ ...form, age: e.target.value })} required />
+                <input
+                  className="input"
+                  type="number"
+                  min={0}
+                  placeholder="—"
+                  value={form.age}
+                  onChange={(e) => setForm({ ...form, age: e.target.value })}
+                  required
+                />
               </Field>
               <Field label="Sex">
-                <select className="input" value={form.sex} onChange={(e) => setForm({ ...form, sex: e.target.value })}>
+                <select
+                  className="input"
+                  value={form.sex}
+                  onChange={(e) => setForm({ ...form, sex: e.target.value })}
+                >
                   <option value="unknown">Unknown</option>
                   <option value="female">Female</option>
                   <option value="male">Male</option>
@@ -132,23 +173,48 @@ export default function Patients() {
                 </select>
               </Field>
             </div>
-            <Field label="Arrival source">
-              <select className="input" value={form.arrivalSource} onChange={(e) => setForm({ ...form, arrivalSource: e.target.value })}>
-                <option value="walk_in">Walk in</option>
+
+            <Field label="Arrival Source">
+              <select
+                className="input"
+                value={form.arrivalSource}
+                onChange={(e) => setForm({ ...form, arrivalSource: e.target.value })}
+              >
+                <option value="walk_in">Walk-in</option>
                 <option value="ems">EMS</option>
                 <option value="transfer">Transfer</option>
                 <option value="referral">Referral</option>
               </select>
             </Field>
-            <Field label="Presenting Symptoms (comma-separated)">
-              <textarea className="input" value={form.symptoms} onChange={(e) => setForm({ ...form, symptoms: e.target.value })} />
+
+            <Field label="Presenting Symptoms" hint="Separate with commas">
+              <textarea
+                className="input resize-none"
+                rows={2}
+                placeholder="chest pain, shortness of breath…"
+                value={form.symptoms}
+                onChange={(e) => setForm({ ...form, symptoms: e.target.value })}
+              />
             </Field>
-            <Field label="Relevant Medical History">
-              <input className="input" value={form.medicalHistory} onChange={(e) => setForm({ ...form, medicalHistory: e.target.value })} />
+
+            <Field label="Medical History" hint="Separate with commas">
+              <input
+                className="input"
+                placeholder="hypertension, T2DM…"
+                value={form.medicalHistory}
+                onChange={(e) => setForm({ ...form, medicalHistory: e.target.value })}
+              />
             </Field>
-            <Field label="Known Allergies">
-              <input className="input" value={form.allergies} onChange={(e) => setForm({ ...form, allergies: e.target.value })} placeholder="Separate with commas" />
+
+            <Field label="Known Allergies" hint="Separate with commas">
+              <input
+                className="input"
+                placeholder="penicillin, sulfa…"
+                value={form.allergies}
+                onChange={(e) => setForm({ ...form, allergies: e.target.value })}
+              />
             </Field>
+
             <Field label="Current Medications">
               <MedInput
                 value={medications}
@@ -158,7 +224,20 @@ export default function Patients() {
                 }}
               />
             </Field>
-            <button className="btn btn-primary" type="submit">Register Patient &amp; Run Triage</button>
+
+            <button
+              className="btn btn-primary mt-1 flex items-center justify-center gap-2"
+              type="submit"
+              disabled={submitting}
+            >
+              {submitting && (
+                <svg className="h-4 w-4 animate-spin" viewBox="0 0 24 24" fill="none">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                </svg>
+              )}
+              {submitting ? "Registering…" : "Register Patient & Run Triage"}
+            </button>
           </form>
         </Card>
       </div>
