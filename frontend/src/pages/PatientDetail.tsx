@@ -4,6 +4,7 @@ import { Copy, X } from "lucide-react";
 import { endpoints } from "@/lib/api";
 import { useAsync } from "@/lib/useAsync";
 import { InteractionPanel } from "@/components/ui/MedInput";
+import { AcuityPanel } from "@/components/ui/AcuityPanel";
 import {
   Badge,
   Card,
@@ -15,6 +16,7 @@ import {
 import { cn, fmtDate, formatStatusLabel, priorityTone, statusTone } from "@/lib/utils";
 
 const STATUSES = ["waiting", "triage", "roomed", "in_treatment", "observation", "admitted", "discharged"];
+const TRIAGE_LEVELS = ["critical", "emergent", "urgent", "semi_urgent", "non_urgent"];
 
 export default function PatientDetail() {
   const { id } = useParams();
@@ -23,6 +25,9 @@ export default function PatientDetail() {
   const [status, setStatus] = useState("waiting");
   const [intakeUrl, setIntakeUrl] = useState("");
   const [copied, setCopied] = useState(false);
+  const [feedbackNotes, setFeedbackNotes] = useState("");
+  const [correctedPriority, setCorrectedPriority] = useState("");
+  const [feedbackSent, setFeedbackSent] = useState(false);
 
   useEffect(() => {
     if (data?.patient?.status) setStatus(data.patient.status);
@@ -162,15 +167,64 @@ export default function PatientDetail() {
             <EmptyState title="No assessments" body="Triage assessments will appear after intake or re-evaluation." />
           ) : (
             <div className="mt-4 grid gap-3">
-              {data.triage.map((t: any) => (
+              {data.triage.map((t: any, i: number) => (
                 <div key={t._id} className="rounded-xl border border-slate-800 p-4">
                   <div className="flex items-start justify-between gap-2">
                     <b className="text-slate-200">{t.conditionCategory}</b>
                     <Badge className={priorityTone(t.priorityLevel)}>{t.priorityLevel?.replace(/_/g, " ")}</Badge>
                   </div>
                   <div className="mt-2 text-3xl font-black text-sky-400">{t.urgencyScore}</div>
-                  <p className="mt-2 text-sm text-slate-500">{t.rationale}</p>
+                  <div className="mt-3">
+                    <AcuityPanel analysis={t} compact />
+                  </div>
                   <p className="mt-2 text-xs text-slate-600">{fmtDate(t.createdAt)}</p>
+                  {i === 0 && (
+                    <div className="mt-4 border-t border-slate-800 pt-3">
+                      <p className="text-[10px] font-bold uppercase tracking-widest text-slate-500">
+                        Teach ACUITY (live learning)
+                      </p>
+                      <p className="mt-1 text-[11px] text-slate-600">
+                        If this triage was wrong, submit a correction — future analyses learn from it.
+                      </p>
+                      <div className="mt-2 grid gap-2">
+                        <select
+                          className="input text-sm"
+                          value={correctedPriority}
+                          onChange={(e) => setCorrectedPriority(e.target.value)}
+                        >
+                          <option value="">Correct priority level…</option>
+                          {TRIAGE_LEVELS.map((l) => (
+                            <option key={l} value={l}>{l.replace(/_/g, " ")}</option>
+                          ))}
+                        </select>
+                        <textarea
+                          className="input min-h-16 text-sm"
+                          placeholder="What did ACUITY miss or over-weight?"
+                          value={feedbackNotes}
+                          onChange={(e) => setFeedbackNotes(e.target.value)}
+                        />
+                        <button
+                          type="button"
+                          className="btn btn-secondary text-sm"
+                          disabled={!correctedPriority || feedbackNotes.length < 3 || feedbackSent}
+                          onClick={() =>
+                            endpoints
+                              .triageFeedback({
+                                assessmentId: t._id,
+                                patientId: id,
+                                originalPriority: t.priorityLevel,
+                                correctedPriority: correctedPriority as any,
+                                originalCategory: t.conditionCategory,
+                                clinicianNotes: feedbackNotes,
+                              })
+                              .then(() => setFeedbackSent(true))
+                          }
+                        >
+                          {feedbackSent ? "Feedback recorded" : "Submit correction"}
+                        </button>
+                      </div>
+                    </div>
+                  )}
                 </div>
               ))}
             </div>
