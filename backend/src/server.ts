@@ -1,6 +1,7 @@
 import { app } from "./app.js";
 import { connectDb } from "./config/db.js";
 import { env } from "./config/env.js";
+import { checkEncryptionConfig } from "./services/encryptionService.js";
 import { User } from "./models/User.js";
 import { Patient } from "./models/Patient.js";
 import { QueueEntry } from "./models/QueueEntry.js";
@@ -10,6 +11,9 @@ import { AuditLog } from "./models/AuditLog.js";
 import { HospitalMetrics } from "./models/HospitalMetrics.js";
 import { OperationalAlert } from "./models/OperationalAlert.js";
 import { Settings } from "./models/Settings.js";
+
+// ── Verify encryption config before connecting to DB ─────────────────────────
+checkEncryptionConfig();
 
 await connectDb();
 
@@ -31,12 +35,12 @@ console.log("[AEGIS] All collections cleared.");
 // ── Provision master admin from environment ────────────────────────────────
 const passwordHash = await User.hashPassword(env.adminPassword!);
 await User.create({
-  name: env.adminName,
-  email: env.adminEmail,
+  name:         env.adminName,
+  email:        env.adminEmail,
   passwordHash,
-  role: "admin",
-  department: "Administration",
-  active: true,
+  role:         "admin",
+  department:   "Administration",
+  active:       true,
 });
 console.log(`[AEGIS] Master admin created: ${env.adminEmail}`);
 
