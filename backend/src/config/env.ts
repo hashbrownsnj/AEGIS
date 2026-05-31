@@ -11,9 +11,10 @@ if (nodeEnv === "production") {
   if (!process.env.JWT_SECRET || jwtSecret === "development_only_replace_me") {
     throw new Error("JWT_SECRET must be set in production");
   }
-  if (!anthropicApiKey) {
-    console.warn("[AEGIS] ANTHROPIC_API_KEY is not set. ACUITY runs on its built-in rule engine; live Claude features are disabled.");
-  }
+}
+
+if (!anthropicApiKey) {
+  console.warn("[AEGIS] ANTHROPIC_API_KEY is not set. ACUITY will use the deterministic rules engine only — Claude AI features disabled.");
 }
 
 if (!process.env.ADMIN_EMAIL || !process.env.ADMIN_PASSWORD) {
