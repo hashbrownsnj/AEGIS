@@ -3,7 +3,7 @@ import { Patient } from "../models/Patient.js";
 import { TriageAssessment } from "../models/TriageAssessment.js";
 import { analyzeTriage, extractFromTranscript } from "../services/acuityService.js";
 import { recordTriageFeedback, getFeedbackStats } from "../services/learningService.js";
-import { isClaudeAvailable } from "../services/claudeService.js";
+import { isClaudeAvailable, MODEL_ID } from "../services/claudeService.js";
 import { ensureQueueEntry } from "../services/queueService.js";
 import { audit } from "../services/auditService.js";
 import { ok } from "../utils/http.js";
@@ -83,5 +83,5 @@ export async function history(req: Request, res: Response) {
 }
 
 export async function aiStatus(_req: Request, res: Response) {
-  return ok(res, { claudeEnabled: isClaudeAvailable(), model: isClaudeAvailable() ? "claude-sonnet-4-20250514" : null });
+  return ok(res, { claudeEnabled: isClaudeAvailable(), model: isClaudeAvailable() ? MODEL_ID : null });
 }
