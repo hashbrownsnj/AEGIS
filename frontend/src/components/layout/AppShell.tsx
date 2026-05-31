@@ -2,13 +2,14 @@ import {
   Activity,
   Ambulance,
   BarChart3,
+  Building2,
   Command,
   FileClock,
   LayoutDashboard,
   LogOut,
+  Navigation,
   Settings,
-  Users,
-  ShieldCheck
+  Users
 } from "lucide-react";
 import { Link, NavLink, Outlet, useLocation, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
@@ -16,23 +17,28 @@ import { useEffect, useMemo, useState } from "react";
 import { endpoints } from "@/lib/api";
 import { useAuth } from "@/contexts/AuthContext";
 import { StatusDot } from "@/components/ui/Primitives";
+import { AegisMark } from "@/components/ui/AegisMark";
 import { CommandPalette, type Command as PaletteCommand } from "@/components/layout/CommandPalette";
 import { cn } from "@/lib/utils";
 
 const nav = [
-  { to: "/",          label: "Command Center", icon: LayoutDashboard, permission: "analytics:read",  group: "main" },
+  { to: "/dashboard", label: "Command Center", icon: LayoutDashboard, permission: "analytics:read",  group: "main" },
   { to: "/queue",     label: "Live Queue",      icon: Activity,        permission: "queue:read",      group: "main" },
   { to: "/ambulances",label: "Ambulances",      icon: Ambulance,       permission: "ambulances:read", group: "main" },
+  { to: "/routing",   label: "Transport Routing",icon: Navigation,      permission: "ambulances:read", group: "main" },
   { to: "/patients",  label: "Patients",        icon: Users,           permission: "patients:read",   group: "main" },
   { to: "/analytics", label: "Analytics",       icon: BarChart3,       permission: "analytics:read",  group: "reports" },
   { to: "/audit",     label: "Audit Log",       icon: FileClock,       permission: "audit:read",      group: "reports" },
+  { to: "/facility",  label: "Facility Setup",  icon: Building2,       permission: "settings:read",   group: "system" },
   { to: "/settings",  label: "Settings",        icon: Settings,        permission: "settings:read",   group: "system" },
 ];
 
 const pageTitles: Record<string, string> = {
-  "/":           "Command Center",
+  "/dashboard":  "Command Center",
   "/queue":      "Live Queue",
   "/ambulances": "Ambulances",
+  "/routing":    "Transport Routing",
+  "/facility":   "Facility Setup",
   "/patients":   "Patients",
   "/analytics":  "Analytics",
   "/audit":      "Audit Log",
@@ -41,13 +47,13 @@ const pageTitles: Record<string, string> = {
 
 function pageTitle(pathname: string) {
   if (pathname.startsWith("/patients/")) return "Patient Detail";
-  return pageTitles[pathname] ?? "AEGIS";
+  return pageTitles[pathname] ?? "Aegis";
 }
 
 function NavGroup({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <div className="mb-1">
-      <div className="mb-1 mt-4 px-3 text-[9px] font-bold uppercase tracking-[.2em] text-slate-600">
+      <div className="mb-1.5 mt-5 px-3 font-mono text-[8.5px] font-semibold uppercase tracking-[.24em] text-slate-600">
         {label}
       </div>
       {children}
@@ -92,7 +98,7 @@ export function AppShell() {
     <NavLink
       key={item.to}
       to={item.to}
-      end={item.to === "/"}
+      end={item.to === "/dashboard"}
       className={({ isActive }) =>
         cn(
           "group relative flex items-center gap-2.5 rounded-lg px-3 py-2 text-[13px] font-semibold transition-all duration-150",
@@ -108,23 +114,20 @@ export function AppShell() {
   );
 
   return (
-    <div className="min-h-screen bg-instrument-grid"
-      style={{ backgroundColor: "hsl(var(--background))" }}>
+    <div className="app-atmosphere min-h-screen">
       <CommandPalette commands={paletteCommands} />
       {/* ── Sidebar ────────────────────────────────────── */}
-      <aside className="fixed inset-y-0 left-0 hidden w-56 flex-col border-r border-slate-800/70 bg-slate-950/95 backdrop-blur-xl lg:flex">
+      <aside className="fixed inset-y-0 left-0 hidden w-56 flex-col border-r border-slate-800/60 bg-slate-950/80 backdrop-blur-xl lg:flex">
         {/* Brand */}
-        <Link to="/" className="flex items-center gap-3 px-4 py-5">
-          <div className="relative grid h-9 w-9 place-items-center rounded-xl border border-sky-500/40 bg-sky-500/15 font-black text-sky-300">
-            <ShieldCheck className="h-5 w-5" />
-          </div>
+        <Link to="/dashboard" className="flex items-center gap-2.5 px-5 py-6">
+          <AegisMark className="h-8 w-auto" />
           <div>
-            <div className="text-[15px] font-black tracking-tight text-slate-100">AEGIS</div>
-            <div className="text-[9px] font-bold uppercase tracking-[.22em] text-slate-500">Command Layer</div>
+            <div className="font-display text-[19px] font-semibold leading-none tracking-tight text-slate-100">Aegis</div>
+            <div className="mt-1 font-mono text-[8.5px] font-semibold uppercase tracking-[.24em] text-slate-500">Command Layer</div>
           </div>
         </Link>
 
-        <div className="mx-4 h-px bg-slate-800/80" />
+        <div className="mx-5 h-px bg-slate-800/70" />
 
         {/* Nav */}
         <nav className="flex-1 overflow-y-auto px-2 py-2">
@@ -194,12 +197,12 @@ export function AppShell() {
             </div>
           </div>
 
-          <div className="flex items-center justify-between gap-4 px-5 py-3">
+          <div className="flex items-center justify-between gap-4 px-5 py-3.5">
             <div>
-              <div className="text-[10px] font-bold uppercase tracking-[.18em] text-slate-600">
+              <h1 className="font-display text-[22px] font-semibold leading-none tracking-tight text-slate-100">
                 {pageTitle(pathname)}
-              </div>
-              <div className="text-[11px] text-slate-500">{user?.department || "Emergency Department"}</div>
+              </h1>
+              <div className="mt-1.5 font-mono text-[10px] uppercase tracking-[.18em] text-slate-500">{user?.department || "Emergency Department"}</div>
             </div>
 
             <div className="flex items-center gap-2.5">
