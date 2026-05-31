@@ -181,7 +181,7 @@ export function MedicFieldRecorder({
       <div
         className={cn(
           "rounded-xl border p-4 transition-all",
-          recording ? "border-red-500/40 bg-red-500/8" : "border-violet-500/30 bg-violet-500/5"
+          recording ? "border-red-500/40 bg-red-500/8" : "border-slate-800 bg-slate-900/40"
         )}
       >
         <div className="flex items-center justify-between gap-3">
@@ -205,7 +205,7 @@ export function MedicFieldRecorder({
               "flex shrink-0 items-center gap-2 rounded-xl px-4 py-2.5 text-sm font-bold transition-all",
               recording
                 ? "bg-red-500 text-white shadow-lg shadow-red-900/30 hover:bg-red-600"
-                : "bg-violet-600 text-white shadow-lg shadow-violet-900/30 hover:bg-violet-500",
+                : "bg-sky-600 text-white shadow-lg shadow-sky-900/30 hover:bg-sky-500",
               !supported && "cursor-not-allowed opacity-40"
             )}
           >
@@ -233,8 +233,8 @@ export function MedicFieldRecorder({
               {formatDuration(elapsed)}
             </span>
             {liveExtracting && aiEnabled ? (
-              <span className="mr-auto self-center text-[10px] font-bold uppercase tracking-widest text-violet-400">
-                AI updating fields…
+              <span className="mr-auto self-center text-[10px] font-bold uppercase tracking-widest text-sky-400">
+                Extracting fields…
               </span>
             ) : (
               <span className="mr-auto self-center text-[10px] font-bold uppercase tracking-widest text-red-400">
