@@ -29,5 +29,9 @@ services:
         value: /api                # relative -> frontend calls the same origin
       - key: MONGODB_URI
         sync: false                # set in dashboard (MongoDB Atlas connection string)
+      - key: ADMIN_EMAIL
+        sync: false                # set in dashboard — seeds/authorizes the first admin
+      - key: ADMIN_PASSWORD
+        sync: false                # set in dashboard — keep out of source control
       - key: ANTHROPIC_API_KEY
         sync: false                # optional; ACUITY runs on its rule engine if unset
