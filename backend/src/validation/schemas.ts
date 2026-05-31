@@ -10,6 +10,19 @@ export const statusSchema = z.object({ body: z.object({ status: z.string(), reas
 export const noteSchema = z.object({ body: z.object({ text: z.string().min(2).max(2000) }) });
 export const ambulanceSchema = z.object({ body: z.object({ unitId: z.string().min(2), etaMinutes: z.number().min(0).max(180), patientDescriptor: z.string().min(2), age: z.number().min(0).max(125).optional(), sex: z.enum(["female", "male", "intersex", "unknown"]).default("unknown"), structuredSymptoms: z.array(z.string()).default([]), reportText: z.string().min(5).max(5000), transcriptText: z.string().max(5000).optional(), vitals: vitals, medications: z.array(medicationItem).default([]), medicationInteractions: z.array(interactionItem).default([]) }) });
 export const triageSchema = z.object({ body: z.object({ patientId: z.string().optional(), symptoms: z.array(z.string()).default([]), age: z.number().optional(), medicalHistory: z.array(z.string()).default([]), vitalSigns: vitals, arrivalSource: z.string().optional(), ambulanceReportText: z.string().optional(), clinicalNotes: z.string().optional() }) });
+export const extractSchema = z.object({ body: z.object({ reportText: z.string().min(5).max(5000) }) });
+export const feedbackSchema = z.object({
+  body: z.object({
+    assessmentId: z.string().optional(),
+    patientId: z.string().optional(),
+    originalPriority: z.enum(["critical", "emergent", "urgent", "semi_urgent", "non_urgent"]),
+    correctedPriority: z.enum(["critical", "emergent", "urgent", "semi_urgent", "non_urgent"]),
+    originalCategory: z.string().optional(),
+    correctedCategory: z.string().optional(),
+    clinicianNotes: z.string().min(3).max(2000),
+    inputSnapshot: z.record(z.unknown()).optional(),
+  }),
+});
 export const manualOverrideSchema = z.object({ body: z.object({ queueEntryId: z.string(), position: z.number().min(1).optional(), priorityScore: z.number().min(0).max(100), reason: z.string().min(5) }) });
 export const pharmaInteractionSchema = z.object({ body: z.object({ rxcuis: z.array(z.string().min(1)).min(2).max(20) }) });
 export const intakeSchema = z.object({
