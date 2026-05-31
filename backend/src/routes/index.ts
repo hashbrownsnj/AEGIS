@@ -12,7 +12,7 @@ import * as triage from "../controllers/triageController.js";
 import * as analytics from "../controllers/analyticsController.js";
 import * as admin from "../controllers/adminController.js";
 import * as pharma from "../controllers/pharmaController.js";
-import { ambulanceSchema, idParam, intakeSchema, loginSchema, manualOverrideSchema, noteSchema, patientCreateSchema, patientUpdateSchema, pharmaInteractionSchema, statusSchema, triageSchema } from "../validation/schemas.js";
+import { ambulanceSchema, extractSchema, feedbackSchema, idParam, intakeSchema, loginSchema, manualOverrideSchema, noteSchema, patientCreateSchema, patientUpdateSchema, pharmaInteractionSchema, statusSchema, triageSchema } from "../validation/schemas.js";
 import { ROLES } from "@aegis/shared";
 
 const r = Router();
@@ -26,6 +26,7 @@ r.post("/auth/refresh", requireAuth, asyncHandler(auth.me));
 // Patients
 r.get("/patients", requireAuth, requirePermission("patients:read"), asyncHandler(patients.listPatients));
 r.post("/patients", requireAuth, requirePermission("patients:write"), validate(patientCreateSchema), asyncHandler(patients.createPatient));
+r.post("/patients/stream", requireAuth, requirePermission("patients:write"), validate(patientCreateSchema), asyncHandler(patients.createPatientStream));
 r.get("/patients/:id", requireAuth, requirePermission("patients:read"), asyncHandler(patients.getPatient));
 r.put("/patients/:id", requireAuth, requirePermission("patients:write"), validate(patientUpdateSchema), asyncHandler(patients.updatePatient));
 r.patch("/patients/:id/status", requireAuth, requirePermission("patients:write"), validate(statusSchema), asyncHandler(patients.updateStatus));
@@ -42,12 +43,18 @@ r.post("/queue/manual-override", requireAuth, requirePermission("queue:write"), 
 // Ambulances
 r.get("/ambulances", requireAuth, requirePermission("ambulances:read"), asyncHandler(ambulance.listAmbulances));
 r.post("/ambulances", requireAuth, requirePermission("ambulances:write"), validate(ambulanceSchema), asyncHandler(ambulance.createAmbulance));
+r.post("/ambulances/stream", requireAuth, requirePermission("ambulances:write"), validate(ambulanceSchema), asyncHandler(ambulance.createAmbulanceStream));
 r.get("/ambulances/:id", requireAuth, requirePermission("ambulances:read"), asyncHandler(ambulance.getAmbulance));
 r.patch("/ambulances/:id", requireAuth, requirePermission("ambulances:write"), asyncHandler(ambulance.updateAmbulance));
 r.post("/ambulances/:id/analyze", requireAuth, requirePermission("ambulances:write"), asyncHandler(ambulance.analyzeReport));
 
 // Triage
 r.post("/triage/analyze", requireAuth, requirePermission("triage:write"), validate(triageSchema), asyncHandler(triage.analyze));
+r.post("/triage/analyze/stream", requireAuth, requirePermission("triage:write"), validate(triageSchema), asyncHandler(triage.analyzeStream));
+r.post("/triage/extract", requireAuth, requirePermission("triage:write"), validate(extractSchema), asyncHandler(triage.extractReport));
+r.post("/triage/feedback", requireAuth, requirePermission("triage:write"), validate(feedbackSchema), asyncHandler(triage.submitFeedback));
+r.get("/triage/learning/stats", requireAuth, requirePermission("analytics:read"), asyncHandler(triage.learningStats));
+r.get("/triage/ai-status", requireAuth, asyncHandler(triage.aiStatus));
 r.get("/triage/:patientId/history", requireAuth, requirePermission("patients:read"), asyncHandler(triage.history));
 
 // Analytics
