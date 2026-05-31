@@ -1,8 +1,9 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import type { DrugInteraction, Medication } from "@aegis/shared";
 import { endpoints } from "@/lib/api";
 import { useAsync } from "@/lib/useAsync";
+import { AcuityPanel } from "@/components/ui/AcuityPanel";
 import { MedInput } from "@/components/ui/MedInput";
 import {
   Badge,
@@ -25,6 +26,10 @@ const EMPTY_FORM = {
   medicalHistory: "",
   allergies: "",
   assignedZone: "",
+  heartRate: "",
+  systolicBp: "",
+  oxygenSaturation: "",
+  painScore: "",
 };
 
 export default function Patients() {
@@ -33,26 +38,53 @@ export default function Patients() {
   const [medicationInteractions, setMedicationInteractions] = useState<DrugInteraction[]>([]);
   const [form, setForm] = useState<any>(EMPTY_FORM);
   const [submitting, setSubmitting] = useState(false);
+  const [liveThoughts, setLiveThoughts] = useState<string[]>([]);
+  const [triagePreview, setTriagePreview] = useState<any>(null);
+  const [aiOnline, setAiOnline] = useState<boolean | null>(null);
+
+  useEffect(() => {
+    endpoints.aiStatus().then((s) => setAiOnline(s.claudeEnabled)).catch(() => setAiOnline(false));
+  }, []);
 
   if (loading) return <Spinner />;
+
+  function buildPayload() {
+    const vitalSigns: Record<string, number> = {};
+    if (form.heartRate) vitalSigns.heartRate = Number(form.heartRate);
+    if (form.systolicBp) vitalSigns.systolicBp = Number(form.systolicBp);
+    if (form.oxygenSaturation) vitalSigns.oxygenSaturation = Number(form.oxygenSaturation);
+    if (form.painScore) vitalSigns.painScore = Number(form.painScore);
+    return {
+      ...form,
+      age: Number(form.age),
+      symptoms: form.symptoms.split(",").map((s: string) => s.trim()).filter(Boolean),
+      medicalHistory: form.medicalHistory.split(",").map((s: string) => s.trim()).filter(Boolean),
+      allergies: form.allergies.split(",").map((s: string) => s.trim()).filter(Boolean),
+      vitalSigns: Object.keys(vitalSigns).length ? vitalSigns : undefined,
+      medications,
+      medicationInteractions,
+    };
+  }
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
     setSubmitting(true);
+    setLiveThoughts([]);
+    setTriagePreview(null);
+    const payload = buildPayload();
     try {
-      await endpoints.createPatient({
-        ...form,
-        age: Number(form.age),
-        symptoms: form.symptoms.split(",").map((s: string) => s.trim()).filter(Boolean),
-        medicalHistory: form.medicalHistory.split(",").map((s: string) => s.trim()).filter(Boolean),
-        allergies: form.allergies.split(",").map((s: string) => s.trim()).filter(Boolean),
-        medications,
-        medicationInteractions,
+      await endpoints.createPatientStream(payload, {
+        onThought: (text) => setLiveThoughts((prev) => (prev.includes(text) ? prev : [...prev, text])),
+        onResult: (data: any) => {
+          if (data?.triage) setTriagePreview(data.triage);
+          setForm(EMPTY_FORM);
+          setMedications([]);
+          setMedicationInteractions([]);
+          setLiveThoughts([]);
+          reload();
+        },
+        onError: () => reload(),
       });
-      setForm(EMPTY_FORM);
-      setMedications([]);
-      setMedicationInteractions([]);
-      reload();
     } finally {
       setSubmitting(false);
     }
@@ -62,7 +94,11 @@ export default function Patients() {
     <div className="grid gap-5">
       <SectionHeader
         title="Patient Management"
-        subtitle="Register incoming patients and run ACUITY triage at intake."
+        subtitle={
+          aiOnline
+            ? "Register patients — Claude ACUITY triages at intake with live reasoning and rules guardrail."
+            : "Register patients — rules-engine triage active (set ANTHROPIC_API_KEY for Claude)."
+        }
       />
 
       <div className="grid gap-5 xl:grid-cols-[1fr_420px]">
@@ -125,6 +161,11 @@ export default function Patients() {
           <div className="mb-4 flex items-center gap-2">
             <UserPlus className="h-4 w-4 text-sky-400" />
             <h2 className="text-sm font-black text-slate-200">Patient Intake</h2>
+            {aiOnline != null && (
+              <Badge className={aiOnline ? "border-violet-500/30 bg-violet-500/10 text-violet-300" : "border-slate-600 text-slate-500"}>
+                {aiOnline ? "Claude Online" : "Rules Only"}
+              </Badge>
+            )}
           </div>
 
           <form className="grid gap-3" onSubmit={submit}>
@@ -215,6 +256,30 @@ export default function Patients() {
               />
             </Field>
 
+            <div className="grid grid-cols-2 gap-3">
+              <Field label="Heart Rate">
+                <input className="input" type="number" placeholder="bpm" value={form.heartRate} onChange={(e) => setForm({ ...form, heartRate: e.target.value })} />
+              </Field>
+              <Field label="Systolic BP">
+                <input className="input" type="number" placeholder="mmHg" value={form.systolicBp} onChange={(e) => setForm({ ...form, systolicBp: e.target.value })} />
+              </Field>
+              <Field label="SpO₂">
+                <input className="input" type="number" placeholder="%" value={form.oxygenSaturation} onChange={(e) => setForm({ ...form, oxygenSaturation: e.target.value })} />
+              </Field>
+              <Field label="Pain (0–10)">
+                <input className="input" type="number" min={0} max={10} placeholder="—" value={form.painScore} onChange={(e) => setForm({ ...form, painScore: e.target.value })} />
+              </Field>
+            </div>
+
+            {(submitting || liveThoughts.length > 0 || triagePreview) && (
+              <AcuityPanel
+                analysis={triagePreview ?? undefined}
+                liveThoughts={liveThoughts}
+                analyzing={submitting}
+                compact
+              />
+            )}
+
             <Field label="Current Medications">
               <MedInput
                 value={medications}
@@ -236,7 +301,7 @@ export default function Patients() {
                   <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
                 </svg>
               )}
-              {submitting ? "Registering…" : "Register Patient & Run Triage"}
+              {submitting ? "Claude triaging…" : "Register Patient & Run Triage"}
             </button>
           </form>
         </Card>
