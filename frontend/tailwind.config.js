@@ -11,8 +11,9 @@ export default {
         primary: "hsl(var(--primary))",
       },
       fontFamily: {
-        sans: ["IBM Plex Sans", "ui-sans-serif", "system-ui"],
-        mono: ["IBM Plex Mono", "ui-monospace", "monospace"],
+        sans: ["Hanken Grotesk", "ui-sans-serif", "system-ui"],
+        mono: ["JetBrains Mono", "ui-monospace", "monospace"],
+        display: ["Fraunces", "ui-serif", "Georgia", "serif"],
       },
     },
   },
