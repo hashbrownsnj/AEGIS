@@ -7,6 +7,7 @@ import { useLiveFieldExtraction } from "@/lib/useLiveFieldExtraction";
 import { AcuityPanel } from "@/components/ui/AcuityPanel";
 import { InteractionPanel, MedInput } from "@/components/ui/MedInput";
 import { MedicFieldRecorder } from "@/components/ui/MedicFieldRecorder";
+import { ClinicalNarrative } from "@/components/ui/ClinicalNarrative";
 import {
   Badge,
   Card,
@@ -62,9 +63,7 @@ function AmbulanceCard({ r }: { r: any }) {
         </div>
       </div>
 
-      <p className="mt-3 rounded-lg border border-slate-800/60 bg-slate-950/40 p-3 text-[12px] leading-relaxed text-slate-400">
-        {r.reportText}
-      </p>
+      <ClinicalNarrative text={r.reportText} className="mt-3" />
 
       {r.medications?.length > 0 && (
         <div className="mt-3 flex flex-wrap gap-1.5">
