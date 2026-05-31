@@ -37,10 +37,7 @@ export function Caduceus3D({ className }: { className?: string }) {
     renderer.toneMapping = THREE.ACESFilmicToneMapping;
     renderer.toneMappingExposure = 1.1;
     renderer.outputColorSpace = THREE.SRGBColorSpace;
-    // Match the home-root background so the canvas blends in seamlessly.
-    // The bloom composer composites against this colour, so setting it here
-    // rather than via scene.background ensures post-processing respects it.
-    renderer.setClearColor(0x080a0f, 1);
+    renderer.setClearColor(0x000000, 0); // fully transparent — page bg shows through
     renderer.domElement.style.display = "block";
     mount.appendChild(renderer.domElement);
 
