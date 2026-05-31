@@ -11,6 +11,8 @@ import {
 } from "lucide-react";
 import { Link, NavLink, Outlet, useLocation, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
+import { useEffect, useState } from "react";
+import { endpoints } from "@/lib/api";
 import { useAuth } from "@/contexts/AuthContext";
 import { Badge, StatusDot } from "@/components/ui/Primitives";
 import { cn } from "@/lib/utils";
@@ -56,6 +58,11 @@ export function AppShell() {
   const navigate = useNavigate();
   const { pathname } = useLocation();
   const initial = user?.name?.charAt(0)?.toUpperCase() ?? "?";
+  const [aiStatus, setAiStatus] = useState<{ claudeEnabled: boolean; model: string | null } | null>(null);
+
+  useEffect(() => {
+    endpoints.aiStatus().then(setAiStatus).catch(() => setAiStatus({ claudeEnabled: false, model: null }));
+  }, []);
 
   const mainItems    = nav.filter((i) => can(i.permission) && i.group === "main");
   const reportItems  = nav.filter((i) => can(i.permission) && i.group === "reports");
@@ -115,10 +122,14 @@ export function AppShell() {
         {/* Footer status */}
         <div className="border-t border-slate-800/70 px-3 py-3">
           <div className="flex items-center gap-2 rounded-lg border border-slate-800 bg-slate-900/60 px-3 py-2">
-            <StatusDot status="live" />
+            <StatusDot status={aiStatus?.claudeEnabled ? "live" : "warn"} />
             <div className="min-w-0 flex-1">
-              <div className="text-[11px] font-bold text-slate-300">ACUITY Online</div>
-              <div className="truncate text-[9px] text-slate-600">{user?.department || "Emergency Dept."}</div>
+              <div className="text-[11px] font-bold text-slate-300">
+                {aiStatus?.claudeEnabled ? "ACUITY · Claude AI" : "ACUITY · Rules Only"}
+              </div>
+              <div className="truncate text-[9px] text-slate-600">
+                {aiStatus?.claudeEnabled ? aiStatus.model ?? "Claude active" : "Set ANTHROPIC_API_KEY"}
+              </div>
             </div>
           </div>
         </div>
