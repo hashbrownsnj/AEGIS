@@ -1,3 +1,45 @@
-import { Navigate, Route, Routes } from "react-router-dom";import { AppShell } from "@/components/layout/AppShell";import { Spinner } from "@/components/ui/Primitives";import { useAuth } from "@/contexts/AuthContext";import Login from "@/pages/Login";import Dashboard from "@/pages/Dashboard";import Queue from "@/pages/Queue";import Patients from "@/pages/Patients";import PatientDetail from "@/pages/PatientDetail";import PatientIntake from "@/pages/PatientIntake";import Ambulances from "@/pages/Ambulances";import Analytics from "@/pages/Analytics";import Audit from "@/pages/Audit";import Settings from "@/pages/Settings";
-function Protected(){const{user,loading}=useAuth();if(loading)return <Spinner/>;return user?<AppShell/>:<Navigate to="/login" replace/>}
-export default function App(){return <Routes><Route path="/login" element={<Login/>}/><Route path="/intake/:token" element={<PatientIntake/>}/><Route element={<Protected/>}><Route index element={<Dashboard/>}/><Route path="queue" element={<Queue/>}/><Route path="ambulances" element={<Ambulances/>}/><Route path="patients" element={<Patients/>}/><Route path="patients/:id" element={<PatientDetail/>}/><Route path="analytics" element={<Analytics/>}/><Route path="audit" element={<Audit/>}/><Route path="settings" element={<Settings/>}/></Route></Routes>}
+import { Navigate, Route, Routes } from "react-router-dom";
+import { AppShell } from "@/components/layout/AppShell";
+import { Spinner } from "@/components/ui/Primitives";
+import { useAuth } from "@/contexts/AuthContext";
+import Home from "@/pages/Home";
+import Login from "@/pages/Login";
+import Dashboard from "@/pages/Dashboard";
+import Queue from "@/pages/Queue";
+import Patients from "@/pages/Patients";
+import PatientDetail from "@/pages/PatientDetail";
+import PatientIntake from "@/pages/PatientIntake";
+import Ambulances from "@/pages/Ambulances";
+import Analytics from "@/pages/Analytics";
+import Audit from "@/pages/Audit";
+import Settings from "@/pages/Settings";
+import Routing from "@/pages/Routing";
+import Facility from "@/pages/Facility";
+
+function Protected() {
+  const { user, loading } = useAuth();
+  if (loading) return <Spinner />;
+  return user ? <AppShell /> : <Navigate to="/login" replace />;
+}
+
+export default function App() {
+  return (
+    <Routes>
+      <Route path="/" element={<Home />} />
+      <Route path="/login" element={<Login />} />
+      <Route path="/intake/:token" element={<PatientIntake />} />
+      <Route element={<Protected />}>
+        <Route path="/dashboard" element={<Dashboard />} />
+        <Route path="/queue" element={<Queue />} />
+        <Route path="/ambulances" element={<Ambulances />} />
+        <Route path="/routing" element={<Routing />} />
+        <Route path="/facility" element={<Facility />} />
+        <Route path="/patients" element={<Patients />} />
+        <Route path="/patients/:id" element={<PatientDetail />} />
+        <Route path="/analytics" element={<Analytics />} />
+        <Route path="/audit" element={<Audit />} />
+        <Route path="/settings" element={<Settings />} />
+      </Route>
+    </Routes>
+  );
+}
