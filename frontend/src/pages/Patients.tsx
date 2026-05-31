@@ -162,8 +162,8 @@ export default function Patients() {
             <UserPlus className="h-4 w-4 text-sky-400" />
             <h2 className="text-sm font-black text-slate-200">Patient Intake</h2>
             {aiOnline != null && (
-              <Badge className={aiOnline ? "border-violet-500/30 bg-violet-500/10 text-violet-300" : "border-slate-600 text-slate-500"}>
-                {aiOnline ? "Claude Online" : "Rules Only"}
+              <Badge className={aiOnline ? "border-emerald-500/30 bg-emerald-500/10 text-emerald-300" : "border-slate-600 text-slate-500"}>
+                {aiOnline ? "ACUITY online" : "Rules only"}
               </Badge>
             )}
           </div>
