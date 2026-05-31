@@ -9,7 +9,7 @@ import type {
   VitalSigns,
 } from "@aegis/shared";
 
-const MODEL_ID = "claude-sonnet-4-20250514";
+const MODEL_ID = "claude-sonnet-4-6";
 
 const triageLevelSchema = z.enum(["critical", "emergent", "urgent", "semi_urgent", "non_urgent"]);
 
