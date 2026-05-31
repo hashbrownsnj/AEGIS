@@ -3,12 +3,14 @@ import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { ApiError } from "@/lib/api";
 import { AegisMark } from "@/components/ui/AegisMark";
+import { ArrowRight, Lock, Eye, EyeOff } from "lucide-react";
 
 export default function Login() {
   const { login } = useAuth();
   const navigate = useNavigate();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
@@ -27,79 +29,143 @@ export default function Login() {
   }
 
   return (
-    <div className="app-atmosphere relative flex min-h-screen items-center justify-center overflow-hidden px-4">
-      {/* single, intentional brand glow behind the mark */}
-      <div
-        aria-hidden
-        className="pointer-events-none absolute left-1/2 top-[26%] h-[440px] w-[440px] -translate-x-1/2 -translate-y-1/2 rounded-full"
-        style={{ background: "radial-gradient(circle, rgba(56,189,248,0.14) 0%, transparent 68%)" }}
-      />
+    <div className="login-root">
+      {/* ── Ambient glow layers ── */}
+      <div aria-hidden className="login-bg-layer" />
+      <div aria-hidden className="login-bg-orb login-bg-orb-1" />
+      <div aria-hidden className="login-bg-orb login-bg-orb-2" />
 
-      <div className="relative w-full max-w-sm">
-        {/* Brand */}
-        <div className="mb-9 flex flex-col items-center text-center">
-          <Link to="/" aria-label="Aegis home">
-            <AegisMark className="h-[84px] w-auto drop-shadow-[0_6px_24px_rgba(56,189,248,0.25)]" animate />
-          </Link>
-          <h1 className="mt-5 font-display text-[2.75rem] font-semibold leading-none tracking-[-0.02em] text-white">
-            Aegis
-          </h1>
-          <p className="mt-3 font-mono text-[10px] font-semibold uppercase tracking-[.3em] text-slate-500">
-            Emergency Department Command
-          </p>
+      {/* ── Nav link back home ── */}
+      <Link to="/" className="login-back-link" aria-label="Back to Aegis home">
+        <AegisMark className="h-6 w-auto" />
+        <span className="font-display text-sm font-semibold text-white/80">Aegis</span>
+      </Link>
+
+      {/* ── Login card ── */}
+      <main className="login-container" role="main">
+        {/* Brand mark */}
+        <div className="login-brand" aria-hidden>
+          <div className="login-mark-glow" />
+          <AegisMark
+            className="h-[72px] w-auto relative z-10"
+            animate
+          />
         </div>
 
-        {/* Card */}
-        <div className="card rounded-2xl p-7">
-          <h2 className="font-display text-lg font-medium tracking-tight text-slate-100">Sign in</h2>
-          <p className="mb-6 mt-1 text-xs text-slate-500">Enter your credentials to access the console.</p>
+        <div className="login-title-group">
+          <h1 className="login-title">Emergency Department Command</h1>
+          <p className="login-subtitle">Sign in to access the Aegis console</p>
+        </div>
 
-          <form onSubmit={handleSubmit} className="grid gap-4">
-            <label className="grid gap-1.5 font-mono text-[10px] font-semibold uppercase tracking-[.16em] text-slate-500">
-              Email
-              <input
-                className="input"
-                type="email"
-                autoComplete="email"
-                placeholder="you@hospital.org"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-                disabled={loading}
-              />
-            </label>
+        {/* Glass card */}
+        <div className="login-card" role="region" aria-label="Sign in form">
+          <div className="login-card-inner">
+            {/* Form header */}
+            <div className="login-form-header">
+              <Lock className="h-4 w-4 text-amber-400/70" aria-hidden />
+              <span>Secure sign in</span>
+            </div>
 
-            <label className="grid gap-1.5 font-mono text-[10px] font-semibold uppercase tracking-[.16em] text-slate-500">
-              Password
-              <input
-                className="input"
-                type="password"
-                autoComplete="current-password"
-                placeholder="••••••••"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-                disabled={loading}
-              />
-            </label>
+            <form onSubmit={handleSubmit} noValidate aria-label="Login form">
+              <div className="login-fields">
+                {/* Email */}
+                <div className="login-field-group">
+                  <label htmlFor="login-email" className="login-label">
+                    Email address
+                  </label>
+                  <input
+                    id="login-email"
+                    className="login-input"
+                    type="email"
+                    autoComplete="email"
+                    placeholder="you@hospital.org"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    required
+                    disabled={loading}
+                    aria-required="true"
+                    aria-describedby={error ? "login-error" : undefined}
+                  />
+                </div>
 
-            {error && (
-              <div className="flex items-center gap-2.5 rounded-lg border border-red-500/25 bg-red-500/8 px-3.5 py-2.5">
-                <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-red-400" aria-hidden />
-                <span className="text-xs text-red-400">{error}</span>
+                {/* Password */}
+                <div className="login-field-group">
+                  <label htmlFor="login-password" className="login-label">
+                    Password
+                  </label>
+                  <div className="login-input-wrap">
+                    <input
+                      id="login-password"
+                      className="login-input login-input-password"
+                      type={showPassword ? "text" : "password"}
+                      autoComplete="current-password"
+                      placeholder="••••••••"
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      required
+                      disabled={loading}
+                      aria-required="true"
+                    />
+                    <button
+                      type="button"
+                      className="login-eye-btn"
+                      onClick={() => setShowPassword((v) => !v)}
+                      aria-label={showPassword ? "Hide password" : "Show password"}
+                      tabIndex={0}
+                    >
+                      {showPassword
+                        ? <EyeOff className="h-4 w-4" aria-hidden />
+                        : <Eye className="h-4 w-4" aria-hidden />
+                      }
+                    </button>
+                  </div>
+                </div>
               </div>
-            )}
 
-            <button type="submit" className="btn btn-primary mt-1 w-full" disabled={loading}>
-              {loading ? "Signing in…" : "Sign in"}
-            </button>
-          </form>
+              {/* Error */}
+              {error && (
+                <div
+                  id="login-error"
+                  role="alert"
+                  aria-live="assertive"
+                  className="login-error"
+                >
+                  <span className="login-error-dot" aria-hidden />
+                  <span>{error}</span>
+                </div>
+              )}
+
+              {/* Submit */}
+              <button
+                type="submit"
+                className="login-submit-btn group"
+                disabled={loading}
+                aria-busy={loading}
+              >
+                {loading ? (
+                  <span className="flex items-center justify-center gap-2">
+                    <span className="login-spinner" aria-hidden />
+                    Signing in…
+                  </span>
+                ) : (
+                  <span className="flex items-center justify-center gap-2">
+                    Sign in
+                    <ArrowRight
+                      className="h-4 w-4 transition-transform duration-200 group-hover:translate-x-0.5"
+                      aria-hidden
+                    />
+                  </span>
+                )}
+              </button>
+            </form>
+          </div>
         </div>
 
-        <p className="mt-5 text-center font-mono text-[10px] uppercase tracking-[.18em] text-slate-600">
-          Decision support · does not diagnose
+        {/* Disclaimer */}
+        <p className="login-disclaimer" aria-label="Safety disclaimer">
+          Decision support · does not diagnose, prescribe, or replace clinician judgment
         </p>
-      </div>
+      </main>
     </div>
   );
 }
