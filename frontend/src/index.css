@@ -1,4 +1,4 @@
-@import url("https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans:wght@400;500;600;700;800&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=Hanken+Grotesk:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap");
 
 @tailwind base;
 @tailwind components;
@@ -21,8 +21,9 @@
   --semi-urgent: 142 71% 45%;
   --non-urgent: 215 28% 45%;
 
-  --font-sans: "IBM Plex Sans", ui-sans-serif, system-ui;
-  --font-mono: "IBM Plex Mono", ui-monospace, monospace;
+  --font-sans: "Hanken Grotesk", ui-sans-serif, system-ui;
+  --font-mono: "JetBrains Mono", ui-monospace, monospace;
+  --font-display: "Fraunces", ui-serif, Georgia, serif;
 }
 
 .light {
@@ -45,12 +46,13 @@ body {
   background: hsl(var(--background));
   color: hsl(var(--foreground));
   font-family: var(--font-sans);
-  font-feature-settings: "cv02", "cv03", "cv04", "cv11";
   -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
 }
 
 code, pre, .font-mono, [class*="tabular-nums"] {
   font-family: var(--font-mono);
+  font-feature-settings: "tnum";
 }
 
 /* ── Scrollbars ───────────────────────────────────────── */
@@ -67,20 +69,19 @@ code, pre, .font-mono, [class*="tabular-nums"] {
   border: 1px solid hsl(var(--border));
   background: hsl(var(--surface));
   background-image:
-    radial-gradient(ellipse at top left, rgba(14, 165, 233, 0.03) 0%, transparent 60%);
+    linear-gradient(180deg, hsl(var(--foreground) / 0.018) 0%, transparent 40%);
   box-shadow:
-    0 1px 3px rgba(0, 0, 0, 0.2),
-    0 4px 24px rgba(0, 0, 0, 0.15),
+    0 1px 2px rgba(0, 0, 0, 0.25),
+    0 6px 28px rgba(0, 0, 0, 0.18),
     inset 0 1px 0 rgba(255, 255, 255, 0.03);
   transition: border-color 200ms ease, box-shadow 200ms ease;
 }
 
 .card:hover {
-  border-color: hsl(var(--primary) / 0.25);
+  border-color: hsl(var(--border) / 1);
   box-shadow:
-    0 1px 3px rgba(0, 0, 0, 0.2),
-    0 8px 32px rgba(0, 0, 0, 0.2),
-    0 0 0 1px hsl(var(--primary) / 0.08),
+    0 1px 2px rgba(0, 0, 0, 0.25),
+    0 10px 36px rgba(0, 0, 0, 0.24),
     inset 0 1px 0 rgba(255, 255, 255, 0.04);
 }
 
@@ -320,14 +321,28 @@ select.input {
   animation: skeleton-sheen 1400ms ease-in-out infinite;
 }
 
-/* ── Atmosphere: faint grid on the deepest background layer ── */
+/* ── Atmosphere: calm premium depth (no grid, no busy texture) ── */
 
-.bg-instrument-grid {
+.app-atmosphere {
+  background-color: hsl(var(--background));
   background-image:
-    linear-gradient(hsl(var(--foreground) / 0.025) 1px, transparent 1px),
-    linear-gradient(90deg, hsl(var(--foreground) / 0.025) 1px, transparent 1px);
-  background-size: 44px 44px;
+    radial-gradient(120% 80% at 50% -10%, hsl(var(--primary) / 0.07) 0%, transparent 55%),
+    linear-gradient(180deg, hsl(var(--surface) / 0.55) 0%, hsl(var(--background)) 42%);
+  background-attachment: fixed;
 }
+
+/* keep the old hook a no-op so any stray reference still renders cleanly */
+.bg-instrument-grid { background-image: none; }
+
+/* Display type — premium editorial serif for hero & major headings */
+.font-display {
+  font-family: var(--font-display);
+  font-optical-sizing: auto;
+  letter-spacing: -0.01em;
+}
+
+/* Hairline rule used across the premium surfaces */
+.hairline { height: 1px; background: linear-gradient(90deg, transparent, hsl(var(--border)), transparent); }
 
 /* ── Accessibility: always-visible focus ring ─────────────── */
 
@@ -347,4 +362,32 @@ select.input {
     scroll-behavior: auto !important;
   }
   .row-reveal { opacity: 1; }
+}
+
+/* ── AEGIS wings: staggered feather reveal (login / first paint) ──────────── */
+
+@keyframes wing-feather-in {
+  from { opacity: 0; transform: translateY(6px) scale(0.96); }
+  to   { opacity: 1; transform: translateY(0)   scale(1); }
+}
+
+.aegis-wing-in polygon {
+  transform-box: fill-box;
+  transform-origin: center;
+  opacity: 0;
+  animation: wing-feather-in 520ms cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+.aegis-wing-in polygon:nth-child(1)  { animation-delay: 60ms; }
+.aegis-wing-in polygon:nth-child(2)  { animation-delay: 110ms; }
+.aegis-wing-in polygon:nth-child(3)  { animation-delay: 160ms; }
+.aegis-wing-in polygon:nth-child(4)  { animation-delay: 210ms; }
+.aegis-wing-in polygon:nth-child(5)  { animation-delay: 260ms; }
+.aegis-wing-in polygon:nth-child(6)  { animation-delay: 310ms; }
+.aegis-wing-in polygon:nth-child(7)  { animation-delay: 360ms; }
+.aegis-wing-in polygon:nth-child(8)  { animation-delay: 200ms; }
+.aegis-wing-in polygon:nth-child(9)  { animation-delay: 250ms; }
+.aegis-wing-in polygon:nth-child(10) { animation-delay: 300ms; }
+
+@media (prefers-reduced-motion: reduce) {
+  .aegis-wing-in polygon { opacity: 1; animation: none; }
 }
