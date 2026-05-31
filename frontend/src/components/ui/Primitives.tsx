@@ -117,9 +117,9 @@ export function Stat({
 
   return (
     <Card className={cn("stat-accent-" + accent)}>
-      <div className="text-[10px] font-bold uppercase tracking-[.15em] text-slate-500">{label}</div>
+      <div className="font-mono text-[10px] font-semibold uppercase tracking-[.18em] text-slate-500">{label}</div>
       <div className="mt-3 flex items-end gap-2">
-        <div className="text-[2rem] font-black leading-none tracking-tight text-slate-100 tabular-nums">
+        <div className="text-[2.1rem] font-bold leading-none tracking-tight text-slate-100 tabular-nums">
           {value}
         </div>
         {trend && <TrendIcon className={cn("mb-0.5 h-4 w-4 shrink-0", trendColor)} />}
@@ -163,9 +163,9 @@ export function SectionHeader({
   return (
     <div className="flex flex-wrap items-start justify-between gap-4">
       <div className="min-w-0">
-        <h1 className="text-[17px] font-bold tracking-tight text-slate-100">{title}</h1>
+        <h1 className="font-display text-[1.6rem] font-semibold leading-tight tracking-tight text-slate-100">{title}</h1>
         {subtitle && (
-          <p className="mt-1 max-w-xl text-[12px] leading-relaxed text-slate-500">{subtitle}</p>
+          <p className="mt-1.5 max-w-2xl text-[13px] leading-relaxed text-slate-500">{subtitle}</p>
         )}
       </div>
       {action && <div className="flex shrink-0 items-center gap-2">{action}</div>}
