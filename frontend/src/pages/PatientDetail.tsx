@@ -52,7 +52,7 @@ export default function PatientDetail() {
         subtitle={`${p.mrn} · ${p.age} years · ${p.arrivalSource?.replace(/_/g, " ")}`}
         action={
           <Badge className={priorityTone(p.triageStatus)}>
-            {p.triageStatus?.replace(/_/g, " ")} · {p.priorityScore}
+            {p.triageStatus?.replace(/_/g, " ")} · <span className="font-mono tabular-nums">{p.priorityScore}</span>
           </Badge>
         }
       />
