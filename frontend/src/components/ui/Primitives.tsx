@@ -69,6 +69,30 @@ export function Spinner() {
   );
 }
 
+export function SkeletonRows({ rows = 6, label = "Loading queue…" }: { rows?: number; label?: string }) {
+  return (
+    <div role="status" aria-busy="true" aria-label={label}>
+      <div className="flex items-center justify-between border-b border-slate-800/80 px-5 py-2.5">
+        <span className="font-mono text-[10px] uppercase tracking-[.2em] text-slate-600">{label}</span>
+        <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-slate-600" aria-hidden />
+      </div>
+      <div>
+        {Array.from({ length: rows }).map((_, i) => (
+          <div key={i} className="flex items-center gap-4 border-t border-slate-800/60 px-5 py-3.5">
+            <div className="skeleton h-6 w-6 shrink-0" style={{ animationDelay: `${i * 90}ms` }} />
+            <div className="grid flex-1 gap-1.5">
+              <div className="skeleton h-3.5" style={{ width: `${40 + ((i * 13) % 35)}%`, animationDelay: `${i * 90}ms` }} />
+              <div className="skeleton h-2.5 w-24" style={{ animationDelay: `${i * 90 + 40}ms` }} />
+            </div>
+            <div className="skeleton h-5 w-20 shrink-0" style={{ animationDelay: `${i * 90}ms` }} />
+            <div className="skeleton h-3.5 w-12 shrink-0" style={{ animationDelay: `${i * 90 + 60}ms` }} />
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 export function Stat({
   label,
   value,
@@ -138,8 +162,8 @@ export function SectionHeader({
 }) {
   return (
     <div className="flex flex-wrap items-start justify-between gap-4">
-      <div>
-        <h1 className="text-xl font-black tracking-tight text-slate-100">{title}</h1>
+      <div className="min-w-0">
+        <h1 className="text-[17px] font-bold tracking-tight text-slate-100">{title}</h1>
         {subtitle && (
           <p className="mt-1 max-w-xl text-[12px] leading-relaxed text-slate-500">{subtitle}</p>
         )}
