@@ -507,10 +507,6 @@ select.input {
   width: min(52vw, 620px);
   height: min(52vw, 620px);
   pointer-events: none;
-  /* Fade edges so the canvas dissolves into the ambient background
-     rather than appearing as a hard-edged rectangle. */
-  -webkit-mask-image: radial-gradient(ellipse 82% 78% at 55% 50%, black 30%, transparent 78%);
-  mask-image:         radial-gradient(ellipse 82% 78% at 55% 50%, black 30%, transparent 78%);
 }
 
 .hero-orb {
@@ -914,8 +910,6 @@ select.input {
   .hero-canvas {
     width: min(82vw, 340px);
     height: min(82vw, 340px);
-    -webkit-mask-image: radial-gradient(ellipse 88% 82% at 50% 55%, black 28%, transparent 76%);
-    mask-image:         radial-gradient(ellipse 88% 82% at 50% 55%, black 28%, transparent 76%);
   }
   .capabilities-section,
   .cta-section { padding-left: 24px; padding-right: 24px; }
