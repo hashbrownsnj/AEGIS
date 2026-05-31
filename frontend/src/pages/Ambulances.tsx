@@ -16,7 +16,7 @@ import {
   Spinner,
 } from "@/components/ui/Primitives";
 import { cn, priorityTone, urgencyBorderClass } from "@/lib/utils";
-import { ChevronDown, ChevronUp, Clock, Radio, Sparkles } from "lucide-react";
+import { ChevronDown, ChevronUp, Clock, Radio, Activity } from "lucide-react";
 
 function AmbulanceCard({ r }: { r: any }) {
   const [expanded, setExpanded] = useState(false);
@@ -144,7 +144,7 @@ function AiInput({
       {...props}
       className={cn(
         "input transition-all",
-        aiFilled && "border-violet-500/50 ring-1 ring-violet-500/25 bg-violet-500/5",
+        aiFilled && "border-sky-500/50 ring-1 ring-sky-500/25 bg-sky-500/5",
         className
       )}
     />
@@ -282,8 +282,8 @@ export default function Ambulances() {
             <Radio className="h-4 w-4 text-sky-400" />
             <h2 className="text-sm font-black text-slate-200">Submit EMS Report</h2>
             {aiOnline != null && (
-              <Badge className={aiOnline ? "border-violet-500/30 bg-violet-500/10 text-violet-300" : "border-slate-600 text-slate-500"}>
-                {aiOnline ? "Claude Online" : "Rules Only"}
+              <Badge className={aiOnline ? "border-emerald-500/30 bg-emerald-500/10 text-emerald-300" : "border-slate-600 text-slate-500"}>
+                {aiOnline ? "ACUITY online" : "Rules only"}
               </Badge>
             )}
           </div>
@@ -311,10 +311,10 @@ export default function Ambulances() {
             )}
 
             {aiFilledFields.size > 0 && (
-              <div className="flex items-center gap-2 rounded-lg border border-violet-500/25 bg-violet-500/8 px-3 py-2 text-[11px] text-violet-300">
-                <Sparkles className="h-3.5 w-3.5 shrink-0" />
+              <div className="flex items-center gap-2 rounded-lg border border-sky-500/25 bg-sky-500/8 px-3 py-2 text-[11px] text-sky-300">
+                <Activity className="h-3.5 w-3.5 shrink-0" aria-hidden />
                 <span>
-                  AI filled {aiFilledFields.size} field{aiFilledFields.size !== 1 ? "s" : ""} from your speech — review before submit.
+                  Extracted {aiFilledFields.size} field{aiFilledFields.size !== 1 ? "s" : ""} from your dictation — review before submit.
                 </span>
               </div>
             )}
@@ -358,7 +358,7 @@ export default function Ambulances() {
               </Field>
               <Field label="Sex" hint={aiFilledFields.has("sex") ? "AI filled" : undefined}>
                 <select
-                  className={cn("input", aiFilledFields.has("sex") && "border-violet-500/50 ring-1 ring-violet-500/25 bg-violet-500/5")}
+                  className={cn("input", aiFilledFields.has("sex") && "border-sky-500/50 ring-1 ring-sky-500/25 bg-sky-500/5")}
                   value={form.sex}
                   onChange={(e) => setForm({ ...form, sex: e.target.value })}
                 >
