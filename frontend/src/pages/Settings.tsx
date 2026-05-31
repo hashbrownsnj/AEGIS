@@ -12,7 +12,7 @@ const ROLE_COLORS: Record<Role, string> = {
   physician: "text-sky-400 bg-sky-400/10 border-sky-500/20",
   nurse: "text-emerald-400 bg-emerald-400/10 border-emerald-500/20",
   ems: "text-orange-400 bg-orange-400/10 border-orange-500/20",
-  dispatcher: "text-violet-400 bg-violet-400/10 border-violet-500/20",
+  dispatcher: "text-teal-400 bg-teal-400/10 border-teal-500/20",
   operations_manager: "text-amber-400 bg-amber-400/10 border-amber-500/20",
 };
 
