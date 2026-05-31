@@ -41,7 +41,7 @@ export function statusTone(status?: string) {
   if (status === "triage") return "border-amber-500/30 bg-amber-500/10 text-amber-400";
   if (status === "roomed") return "border-blue-500/30 bg-blue-500/10 text-blue-400";
   if (status === "in_treatment") return "border-emerald-500/30 bg-emerald-500/10 text-emerald-400";
-  if (status === "observation") return "border-purple-500/30 bg-purple-500/10 text-purple-400";
+  if (status === "observation") return "border-teal-500/30 bg-teal-500/10 text-teal-400";
   if (status === "admitted") return "border-indigo-500/30 bg-indigo-500/10 text-indigo-400";
   if (status === "discharged") return "border-slate-600/30 bg-slate-600/10 text-slate-500";
   return "border-slate-500/30 bg-slate-500/10 text-slate-400";
@@ -49,4 +49,28 @@ export function statusTone(status?: string) {
 
 export function formatStatusLabel(status?: string) {
   return status?.replace(/_/g, " ") ?? "";
+}
+
+export function triageAccent(level?: string): string {
+  switch (level) {
+    case "critical":    return "hsl(var(--critical))";
+    case "emergent":    return "hsl(var(--emergent))";
+    case "urgent":      return "hsl(var(--urgent))";
+    case "semi_urgent": return "hsl(var(--semi-urgent))";
+    case "non_urgent":  return "hsl(var(--non-urgent))";
+    default:            return "hsl(var(--non-urgent))";
+  }
+}
+
+export const ACUITY_RANK: Record<string, number> = {
+  critical: 5,
+  emergent: 4,
+  urgent: 3,
+  semi_urgent: 2,
+  non_urgent: 1,
+  pending: 0,
+};
+
+export function acuityRank(level?: string): number {
+  return ACUITY_RANK[level ?? ""] ?? 0;
 }
