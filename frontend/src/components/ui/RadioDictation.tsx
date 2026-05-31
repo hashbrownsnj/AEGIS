@@ -5,6 +5,7 @@ import { cn } from "@/lib/utils";
 interface RadioDictationProps {
   value: string;
   onChange: (text: string) => void;
+  onTranscriptComplete?: (text: string) => void;
   placeholder?: string;
   className?: string;
   rows?: number;
@@ -13,6 +14,7 @@ interface RadioDictationProps {
 export function RadioDictation({
   value,
   onChange,
+  onTranscriptComplete,
   placeholder = "Paramedic report will appear here as you speak…",
   className,
   rows = 5
@@ -27,7 +29,6 @@ export function RadioDictation({
   const streamRef = useRef<MediaStream | null>(null);
   const animFrameRef = useRef<number>(0);
 
-  // keep finalRef in sync with prop
   useEffect(() => { finalRef.current = value; }, [value]);
 
   const stopVolumeMeter = useCallback(() => {
@@ -107,12 +108,14 @@ export function RadioDictation({
       setListening(false);
       setInterim("");
       stopVolumeMeter();
+      const text = finalRef.current.trim();
+      if (text && onTranscriptComplete) onTranscriptComplete(text);
     };
 
     recognitionRef.current = recognition;
     recognition.start();
     startVolumeMeter();
-  }, [SR, onChange, startVolumeMeter, stopVolumeMeter]);
+  }, [SR, onChange, onTranscriptComplete, startVolumeMeter, stopVolumeMeter]);
 
   const stopListening = useCallback(() => {
     recognitionRef.current?.stop();
@@ -129,7 +132,6 @@ export function RadioDictation({
 
   return (
     <div className={cn("grid gap-2", className)}>
-      {/* Radio channel header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-widest text-slate-500">
           <Radio className="h-3.5 w-3.5" />
@@ -162,7 +164,6 @@ export function RadioDictation({
         </button>
       </div>
 
-      {/* Volume visualizer */}
       {listening && (
         <div className="flex items-end gap-[3px] h-7 rounded-lg border border-red-500/20 bg-red-500/5 px-3 py-1">
           <span className="relative mr-2 flex h-2 w-2 shrink-0 self-center">
@@ -189,7 +190,6 @@ export function RadioDictation({
         </div>
       )}
 
-      {/* Textarea */}
       <div className="relative">
         <textarea
           className={cn(
