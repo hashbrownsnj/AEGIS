@@ -2,6 +2,7 @@ import {
   Activity,
   Ambulance,
   BarChart3,
+  Command,
   FileClock,
   LayoutDashboard,
   LogOut,
@@ -11,10 +12,11 @@ import {
 } from "lucide-react";
 import { Link, NavLink, Outlet, useLocation, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { endpoints } from "@/lib/api";
 import { useAuth } from "@/contexts/AuthContext";
-import { Badge, StatusDot } from "@/components/ui/Primitives";
+import { StatusDot } from "@/components/ui/Primitives";
+import { CommandPalette, type Command as PaletteCommand } from "@/components/layout/CommandPalette";
 import { cn } from "@/lib/utils";
 
 const nav = [
@@ -64,9 +66,27 @@ export function AppShell() {
     endpoints.aiStatus().then(setAiStatus).catch(() => setAiStatus({ claudeEnabled: false, model: null }));
   }, []);
 
+  // Live clock for the ops status bar.
+  const [clock, setClock] = useState(() => new Date());
+  useEffect(() => {
+    const id = setInterval(() => setClock(new Date()), 1000);
+    return () => clearInterval(id);
+  }, []);
+
   const mainItems    = nav.filter((i) => can(i.permission) && i.group === "main");
   const reportItems  = nav.filter((i) => can(i.permission) && i.group === "reports");
   const systemItems  = nav.filter((i) => can(i.permission) && i.group === "system");
+
+  const paletteCommands = useMemo<PaletteCommand[]>(
+    () =>
+      nav
+        .filter((i) => can(i.permission))
+        .map((i) => ({ label: i.label, to: i.to, icon: i.icon })),
+    [can]
+  );
+
+  const claudeOn = !!aiStatus?.claudeEnabled;
+  const modelShort = aiStatus?.model ? aiStatus.model.replace(/^claude-/, "") : null;
 
   const navItem = (item: typeof nav[0]) => (
     <NavLink
@@ -88,14 +108,14 @@ export function AppShell() {
   );
 
   return (
-    <div className="min-h-screen"
-      style={{ background: "radial-gradient(ellipse at top left, rgba(14,165,233,.055) 0%, transparent 40%), hsl(var(--background))" }}>
-
+    <div className="min-h-screen bg-instrument-grid"
+      style={{ backgroundColor: "hsl(var(--background))" }}>
+      <CommandPalette commands={paletteCommands} />
       {/* ── Sidebar ────────────────────────────────────── */}
       <aside className="fixed inset-y-0 left-0 hidden w-56 flex-col border-r border-slate-800/70 bg-slate-950/95 backdrop-blur-xl lg:flex">
         {/* Brand */}
         <Link to="/" className="flex items-center gap-3 px-4 py-5">
-          <div className="relative grid h-9 w-9 place-items-center rounded-xl bg-gradient-to-br from-sky-500 to-sky-700 font-black text-white shadow-lg shadow-sky-900/30">
+          <div className="relative grid h-9 w-9 place-items-center rounded-xl border border-sky-500/40 bg-sky-500/15 font-black text-sky-300">
             <ShieldCheck className="h-5 w-5" />
           </div>
           <div>
@@ -122,13 +142,13 @@ export function AppShell() {
         {/* Footer status */}
         <div className="border-t border-slate-800/70 px-3 py-3">
           <div className="flex items-center gap-2 rounded-lg border border-slate-800 bg-slate-900/60 px-3 py-2">
-            <StatusDot status={aiStatus?.claudeEnabled ? "live" : "warn"} />
+            <StatusDot status={claudeOn ? "live" : "warn"} />
             <div className="min-w-0 flex-1">
-              <div className="text-[11px] font-bold text-slate-300">
-                {aiStatus?.claudeEnabled ? "ACUITY · Claude AI" : "ACUITY · Rules Only"}
+              <div className="font-mono text-[11px] font-semibold uppercase tracking-[.1em] text-slate-300">
+                {claudeOn ? "ACUITY online" : "Rules only"}
               </div>
-              <div className="truncate text-[9px] text-slate-600">
-                {aiStatus?.claudeEnabled ? aiStatus.model ?? "Claude active" : "Set ANTHROPIC_API_KEY"}
+              <div className="truncate font-mono text-[9px] tabular-nums text-slate-600">
+                {claudeOn ? modelShort ?? "model active" : "set ANTHROPIC_API_KEY"}
               </div>
             </div>
           </div>
@@ -139,6 +159,41 @@ export function AppShell() {
       <main className="lg:pl-56">
         {/* Header */}
         <header className="sticky top-0 z-20 border-b border-slate-800/70 bg-slate-950/80 backdrop-blur-xl">
+          {/* Top status strip — reads like an ops console */}
+          <div className="flex items-center justify-between gap-3 border-b border-slate-800/50 px-5 py-1.5">
+            <div className="flex items-center gap-2">
+              <span
+                className={cn(
+                  "inline-flex items-center gap-1.5 rounded border px-2 py-0.5 font-mono text-[10px] font-semibold uppercase tracking-[.12em]",
+                  claudeOn
+                    ? "border-emerald-500/30 bg-emerald-500/10 text-emerald-300"
+                    : "border-amber-500/30 bg-amber-500/10 text-amber-300"
+                )}
+              >
+                <StatusDot status={claudeOn ? "live" : "warn"} />
+                {claudeOn ? `ACUITY ONLINE${modelShort ? ` · ${modelShort}` : ""}` : "RULES ONLY"}
+              </span>
+              <button
+                type="button"
+                onClick={() => window.dispatchEvent(new CustomEvent("aegis:open-palette"))}
+                className="hidden items-center gap-1.5 rounded border border-slate-800 bg-slate-900/60 px-2 py-0.5 font-mono text-[10px] text-slate-500 transition-colors hover:text-slate-300 sm:inline-flex"
+                aria-label="Open command palette"
+              >
+                <Command className="h-3 w-3" aria-hidden />
+                <span className="tracking-[.1em]">⌘K</span>
+              </button>
+            </div>
+            <div className="flex items-center gap-3 font-mono text-[11px] tabular-nums text-slate-500">
+              <span className="hidden md:inline">
+                {user?.name}
+                {user?.role && <span className="text-slate-600"> · {user.role.replace(/_/g, " ").toUpperCase()}</span>}
+              </span>
+              <span className="text-slate-300" aria-label="Current time">
+                {clock.toLocaleTimeString([], { hour12: false })}
+              </span>
+            </div>
+          </div>
+
           <div className="flex items-center justify-between gap-4 px-5 py-3">
             <div>
               <div className="text-[10px] font-bold uppercase tracking-[.18em] text-slate-600">
