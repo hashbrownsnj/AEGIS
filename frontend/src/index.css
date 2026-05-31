@@ -265,3 +265,86 @@ select.input {
   0%, 100% { box-shadow: 0 0 8px hsl(var(--primary) / 0.3); }
   50%       { box-shadow: 0 0 20px hsl(var(--primary) / 0.6); }
 }
+
+/* ── Instrument reveal (staggered first-load) ─────────────── */
+
+@keyframes row-enter {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* Single, non-looping reveal for instrument rows. animation-delay
+   set inline per row index for the orchestrated first-load stagger. */
+.row-reveal {
+  opacity: 0;
+  animation: row-enter 360ms cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+/* ── New-row flash (fires once when a patient enters the queue) ── */
+
+@keyframes row-flash {
+  0%   { background: hsl(var(--primary) / 0.16); box-shadow: inset 2px 0 0 hsl(var(--primary)); }
+  100% { background: transparent;                box-shadow: inset 2px 0 0 transparent; }
+}
+
+.row-flash { animation: row-flash 1500ms ease-out 1; }
+
+/* ── Single attention pulse, then rest (guardrail badge) ──── */
+
+@keyframes pulse-once {
+  0%   { box-shadow: 0 0 0 0 hsl(var(--emergent) / 0.55); }
+  70%  { box-shadow: 0 0 0 7px hsl(var(--emergent) / 0); }
+  100% { box-shadow: 0 0 0 0 hsl(var(--emergent) / 0); }
+}
+
+.animate-pulse-once { animation: pulse-once 1100ms ease-out 1; }
+
+/* ── Skeleton (engineered loading state) ──────────────────── */
+
+@keyframes skeleton-sheen {
+  0%   { background-position: -160% 0; }
+  100% { background-position: 260% 0; }
+}
+
+.skeleton {
+  border-radius: 0.375rem;
+  background-color: hsl(var(--muted) / 0.5);
+  background-image: linear-gradient(
+    90deg,
+    transparent 0%,
+    hsl(var(--foreground) / 0.05) 50%,
+    transparent 100%
+  );
+  background-size: 200% 100%;
+  background-repeat: no-repeat;
+  animation: skeleton-sheen 1400ms ease-in-out infinite;
+}
+
+/* ── Atmosphere: faint grid on the deepest background layer ── */
+
+.bg-instrument-grid {
+  background-image:
+    linear-gradient(hsl(var(--foreground) / 0.025) 1px, transparent 1px),
+    linear-gradient(90deg, hsl(var(--foreground) / 0.025) 1px, transparent 1px);
+  background-size: 44px 44px;
+}
+
+/* ── Accessibility: always-visible focus ring ─────────────── */
+
+:focus-visible {
+  outline: 2px solid hsl(var(--primary));
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* ── Honor reduced-motion globally ────────────────────────── */
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+  .row-reveal { opacity: 1; }
+}
